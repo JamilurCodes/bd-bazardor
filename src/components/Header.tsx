@@ -17,7 +17,6 @@ const Header = () => {
 
   return (
     <header className="w-full bg-[#f9fbf9] text-[#202820]">
-      {/* Row 1: Logo, date and authentication */}
       <div className="border-b border-[#e5eae5]">
         <div className="mx-auto flex max-w-300 flex-col items-center justify-between gap-4 px-5 py-4 sm:flex-row">
           <Link
@@ -28,8 +27,8 @@ const Header = () => {
             <Image
               src={Logo}
               alt="বাজার দর লোগো"
-              width={30}
-              height={30}
+              width={20}
+              height={20}
               priority
               className="rounded-xl object-cover"
             />
@@ -49,14 +48,12 @@ const Header = () => {
         </div>
       </div>
 
-      {/* Row 2: Product categories */}
       <div className="border-b border-[#e5eae5]">
         <div className="mx-auto max-w-300 px-5">
           <NavLinks />
         </div>
       </div>
 
-      {/* Row 3: Scrolling market prices */}
       <Marquee />
     </header>
   );

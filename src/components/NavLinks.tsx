@@ -128,16 +128,6 @@ const NavLinks = () => {
       aria-label="পণ্যের বিভাগ"
       className="flex items-center gap-6 overflow-x-auto"
     >
-      <Link
-        href="/"
-        aria-current={pathname === "/" ? "page" : undefined}
-        className={`${linkClass} ${
-          pathname === "/" ? "text-[#078640]" : ""
-        }`}
-      >
-        <span aria-hidden="true">🏠</span>
-        <span>হোম</span>
-      </Link>
 
       {categories.map((category) => {
         const href = `/category/${category.slug}`;

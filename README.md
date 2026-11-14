@@ -4,8 +4,7 @@
 
 The application uses the Programming Hero BazarDor API to retrieve product and market-price information.
 
-
-
+---
 
 ## ✨ Features
 
@@ -19,8 +18,7 @@ The application uses the Programming Hero BazarDor API to retrieve product and m
 - **Responsive Interface:** Access the application on mobile, tablet, and desktop devices.
 - **Bengali Localization:** Display product information and prices using Bengali text and numerals.
 
-
-
+---
 
 ## 🛠️ Technologies Used
 
@@ -37,12 +35,11 @@ The application uses the Programming Hero BazarDor API to retrieve product and m
 | React Icons | Interface icons |
 | Programming Hero BazarDor API | Product and market-price data |
 
-
-
+---
 
 ## 📁 Project Structure
 
-
+```text
 bd-bazardor/
 ├── public/
 │   ├── bazar-hero.png
@@ -93,15 +90,13 @@ bd-bazardor/
 ├── next.config.ts
 ├── tsconfig.json
 └── README.md
+```
 
-
-
-
+---
 
 ## 🚀 Getting Started
 
 Follow these steps to run BazarDor locally.
-
 
 ### Prerequisites
 
@@ -145,8 +140,7 @@ GOOGLE_CLIENT_SECRET=
 # GitHub OAuth (Optional)
 GITHUB_CLIENT_ID=
 GITHUB_CLIENT_SECRET=
-
-
+```
 
 **Important:**
 - `MONGODB_URI`, `BETTER_AUTH_URL`, and `BETTER_AUTH_SECRET` are required.
@@ -162,8 +156,7 @@ npm run dev
 
 Open [http://localhost:3000](http://localhost:3000) in your browser.
 
-
-
+---
 
 ## 📡 API Integration
 
@@ -171,12 +164,12 @@ BazarDor retrieves product and market-price information from the Programming Her
 
 **Base URL:**
 
-
+```text
 https://openapi.programming-hero.com/api/bazardor
-
+```
 
 | Endpoint | Description |
-
+|---|---|
 | `/products` | Retrieve all products |
 | `/products?category=chal` | Retrieve products by category |
 | `/products/1` | Retrieve a product by ID |
@@ -187,7 +180,7 @@ Product data is handled centrally through `src/lib/products-api.ts`, while the c
 
 API requests use a five-minute revalidation interval.
 
-
+---
 
 ## 🔐 Authentication
 
@@ -211,7 +204,7 @@ Authentication-related routes:
 
 Individual product-detail pages require authentication.
 
-
+---
 
 ## 🌐 Deployment
 
@@ -225,14 +218,14 @@ BazarDor can be deployed using [Vercel](https://vercel.com/).
 6. Deploy the application.
 7. Test authentication, product routes, and page refreshes on the deployed website.
 
-
+---
 
 ## 🔗 Project Links
 
-- **Live Website:** [https://bangladesh-bazar-dor.vercel.app](#)
+- **Live Website:** [Add your deployed URL here](#)
 - **GitHub Repository:** [bd-bazardor](https://github.com/JamilurCodes/bd-bazardor)
 
-
+---
 
 ## 👨‍💻 Author
 
@@ -240,7 +233,7 @@ BazarDor can be deployed using [Vercel](https://vercel.com/).
 
 GitHub: [@JamilurCodes](https://github.com/JamilurCodes)
 
-
+---
 
 *BazarDor — প্রয়োজনীয় পণ্যের দাম এক নজরে।*
 

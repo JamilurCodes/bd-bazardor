@@ -9,11 +9,17 @@
     "lint": "eslint"
   },
   "dependencies": {
-    "@tailwindcss/postcss": "^4.3.3",
+    "@better-auth/mongo-adapter": "^1.7.23",
+    "better-auth": "^1.7.23",
+    "mongodb": "^7.9.0",
     "next": "16.4.2",
     "react": "19.3.0",
     "react-dom": "19.3.0",
-    "react-marquee-text": "^1.0.6"
+    "react-hot-toast": "^2.6.1",
+    "react-icons": "^5.7.0",
+    "react-marquee-text": "^1.0.6",
+    "shadcn": "^4.23.0",
+    "tw-animate-css": "^1.4.0"
   },
   "devDependencies": {
     "@tailwindcss/turbopack": "^4",

@@ -1,10 +1,7 @@
-
 import MarqueeText from "react-marquee-text";
 import "react-marquee-text/dist/styles.css";
+import { getProducts } from "@/lib/products-api";
 
-/*
- * Defines the structure of market price information returned by the API.
- */
 export interface Market {
   market: string;
   division: string;
@@ -12,17 +9,12 @@ export interface Market {
   max: number;
 }
 
-/*
- * Represents the direction and percentage of a product's price change.
- */
 export interface Change {
   dir: string;
   pct: number;
 }
 
-/*
- * Defines the complete structure of a product returned by the Bazar Dor API.
- */
+/** Shape of a product as returned by the BazarDor API. */
 export interface MarketProduct {
   id: number;
   slug: string;
@@ -40,17 +32,7 @@ export interface MarketProduct {
   markets: Market[];
 }
 
-/*
- * Supports the possible API response structures, including nested data arrays.
- */
-interface ApiResponse {
-  data?: MarketProduct[] | { data?: MarketProduct[] };
-}
-
-/*
- * Formats numeric prices using Bengali numerals.
- * Returns a fallback message when the supplied price is invalid.
- */
+/** Formats a price with Bengali numerals, or a fallback message for invalid values. */
 function formatPrice(price: number): string {
   if (!Number.isFinite(price)) {
     return "দাম পাওয়া যায়নি";
@@ -61,36 +43,25 @@ function formatPrice(price: number): string {
   }).format(price);
 }
 
-/*
- * Determines the arrow, color, and percentage used to represent price changes.
- * Increasing prices appear in red, while decreasing prices appear in green.
+/**
+ * Builds the arrow, color, and percentage shown for a price change.
+ * Rising prices render in green and falling prices in red.
  * Returns null when the change data is missing or the direction is unknown.
  */
 function getPriceChange(change?: Change) {
-  if (
-    !change ||
-    !Number.isFinite(Number(change.pct))
-  ) {
+  if (!change || !Number.isFinite(Number(change.pct))) {
     return null;
   }
 
   const direction = String(change.dir).toLowerCase();
 
-  const isUp = [
-    "up",
-    "increase",
-    "increased",
-    "rise",
-    "rising",
-  ].includes(direction);
+  const isUp = ["up", "increase", "increased", "rise", "rising"].includes(
+    direction,
+  );
 
-  const isDown = [
-    "down",
-    "decrease",
-    "decreased",
-    "fall",
-    "falling",
-  ].includes(direction);
+  const isDown = ["down", "decrease", "decreased", "fall", "falling"].includes(
+    direction,
+  );
 
   if (!isUp && !isDown) {
     return null;
@@ -98,71 +69,54 @@ function getPriceChange(change?: Change) {
 
   return {
     arrow: isUp ? "▲" : "▼",
-    color: isUp ? "text-red-600" : "text-green-700",
+    color: isUp ? "text-green-600" : "text-red-500",
     percentage: formatPrice(Math.abs(Number(change.pct))),
-    label: isUp ? "দাম বেড়েছে" : "দাম কমেছে",
+    label: isUp ? "দাম বেড়েছে" : "দাম কমেছে",
   };
 }
 
-/*
- * Formats the product's unit for display alongside its price.
- * Uses a generic fallback when the API does not provide a unit.
- */
+/** Formats the product's unit for display alongside its price. */
 function formatUnit(unit: string): string {
-  const normalizedUnit = unit.trim();
+  const unitMap: Record<string, string> = {
+    kg: "কেজি",
+    kilogram: "কেজি",
+    liter: "লিটার",
+    litre: "লিটার",
+    dozen: "ডজন",
+    piece: "পিস",
+    pcs: "পিস",
+    packet: "প্যাকেট",
+    pkt: "প্যাকেট",
+    bottle: "বতল",
+    can: "ক্যান",
+    gm: "গ্রাম",
+    gram: "গ্রাম",
+    ml: "এমএল",
+    milliliter: "এমএল",
+  };
+
+  const normalizedUnit = unit.trim().toLowerCase();
 
   if (!normalizedUnit) {
     return "টাকা/একক";
   }
 
-  return `টাকা/${normalizedUnit.replace(/^প্রতি\s*/, "")}`;
+  const bengaliUnit = unitMap[normalizedUnit] || normalizedUnit;
+  return `টাকা/${bengaliUnit.replace(/^প্রতি\s*/, "")}`;
 }
 
-/*
- * Fetches product prices on the server and renders the scrolling market ticker.
- * Next.js revalidates the cached API response every five minutes.
- */
+/** Renders the scrolling market-price ticker from the latest product data. */
 export default async function Marquee() {
+  // Revalidation is handled by the API helper (next: { revalidate: 300 }).
   let products: MarketProduct[] = [];
 
   try {
-    /*
-     * Fetch the latest product data from the Bazar Dor API.
-     */
-    const response = await fetch(
-      "https://openapi.programming-hero.com/api/bazardor/products",
-      {
-        next: { revalidate: 300 },
-      }
-    );
-
-    if (response.ok) {
-      const result: ApiResponse | MarketProduct[] =
-        await response.json();
-
-      /*
-       * Normalize the response into a product array.
-       * Supports a direct array, data array, or nested data array.
-       */
-      products = Array.isArray(result)
-        ? result
-        : Array.isArray(result.data)
-          ? result.data
-          : Array.isArray(result.data?.data)
-            ? result.data.data
-            : [];
-    }
+    products = await getProducts();
   } catch (error) {
-    /*
-     * Log unexpected request errors and stop rendering the ticker.
-     */
-    console.error("Failed to load market prices:", error);
-    return null;
+    console.error("Unable to load the market-price ticker:", error);
   }
 
-  /*
-   * Do not render the ticker when the API returns no products.
-   */
+  // Nothing to scroll when the API returns no products.
   if (products.length === 0) {
     return null;
   }
@@ -188,23 +142,16 @@ export default async function Marquee() {
                   key={product.id ?? product.slug}
                   className="inline-flex shrink-0 items-center gap-2 whitespace-nowrap border-r border-[#e8ede9] px-4 py-2.5 text-sm sm:px-5 sm:text-base"
                 >
-                  {/* Product category icon */}
                   <span aria-hidden="true" className="text-base">
                     {product.categoryIcon || "🛒"}
                   </span>
 
-                  {/* Bengali product name */}
-                  <span className="font-semibold">
-                    {product.nameBn}
-                  </span>
+                  <span className="font-semibold">{product.nameBn}</span>
 
-                  {/* Current price and measurement unit */}
                   <span className="font-normal text-[#303831]">
-                    {formatPrice(product.today)}{" "}
-                    {formatUnit(product.unit)}
+                    {formatPrice(product.today)} {formatUnit(product.unit)}
                   </span>
 
-                  {/* Price-change indicator, displayed when valid */}
                   {change && (
                     <span
                       className={`inline-flex items-center gap-1 font-semibold ${change.color}`}

@@ -23,23 +23,19 @@ export default function SignInPage() {
 
   const [loading, setLoading] = useState(false);
 
-  const callbackUrl =
-    typeof window !== "undefined"
-      ? getSafeCallbackUrl(
-          new URLSearchParams(window.location.search).get("callbackUrl"),
-        )
-      : "/";
-  const callbackReady = typeof window !== "undefined";
+  // The callback URL is resolved inside an effect (never during render),
+  // so the server render and the first client render produce identical
+  // markup and React hydration does not mismatch.
+  const [callbackUrl, setCallbackUrl] = useState<string | null>(null);
 
-  // Visitors redirected from a product page get a hint why they are here.
+  // Resolve the safe callback URL on mount. Visitors redirected from a
+  // product page also get a hint why they are here.
   useEffect(() => {
-    if (typeof window === "undefined") {
-      return;
-    }
-
     const params = new URLSearchParams(window.location.search);
     const requestedUrl = params.get("callbackUrl");
     const safeUrl = getSafeCallbackUrl(requestedUrl);
+
+    setCallbackUrl(safeUrl);
 
     if (requestedUrl && safeUrl.startsWith("/product/")) {
       toast("বিস্তারিত দাম দেখতে আগে সাইন ইন করুন");
@@ -48,17 +44,11 @@ export default function SignInPage() {
 
   // Signed-in users skip the form and go to their intended page.
   useEffect(() => {
-    if (callbackReady && !session.isPending && session.data?.user) {
+    if (callbackUrl && !session.isPending && session.data?.user) {
       router.replace(callbackUrl);
       router.refresh();
     }
-  }, [
-    callbackReady,
-    callbackUrl,
-    router,
-    session.isPending,
-    session.data?.user,
-  ]);
+  }, [callbackUrl, router, session.isPending, session.data?.user]);
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -77,7 +67,7 @@ export default function SignInPage() {
         email,
         password: formData.password,
         rememberMe: true,
-        callbackURL: callbackUrl,
+        callbackURL: callbackUrl ?? "/",
       });
 
       if (error) {
@@ -87,7 +77,7 @@ export default function SignInPage() {
 
       toast.success("সফলভাবে সাইন ইন করা হয়েছে");
 
-      router.replace(callbackUrl);
+      router.replace(callbackUrl ?? "/");
       router.refresh();
     } catch (error: unknown) {
       const message =
@@ -105,7 +95,7 @@ export default function SignInPage() {
     try {
       const { error } = await authClient.signIn.social({
         provider,
-        callbackURL: callbackUrl,
+        callbackURL: callbackUrl ?? "/",
       });
 
       if (error) {
@@ -115,7 +105,7 @@ export default function SignInPage() {
 
       toast.success("সফলভাবে সাইন ইন করা হয়েছে");
 
-      router.replace(callbackUrl);
+      router.replace(callbackUrl ?? "/");
       router.refresh();
     } catch (error: unknown) {
       const message =
@@ -128,7 +118,7 @@ export default function SignInPage() {
   };
 
   // Don't flash the form while the session or callback URL is still resolving.
-  if (session.isPending || !callbackReady) {
+  if (session.isPending || callbackUrl === null) {
     return (
       <div className="mx-auto flex min-h-[55vh] w-full max-w-md items-center justify-center px-4">
         <div className="w-full animate-pulse space-y-4">

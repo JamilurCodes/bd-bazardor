@@ -1,6 +1,11 @@
 "use client";
 
-import { useEffect, useState, type FormEvent } from "react";
+import {
+  useEffect,
+  useState,
+  useSyncExternalStore,
+  type FormEvent,
+} from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { toast } from "react-hot-toast";
@@ -10,6 +15,27 @@ import { FaGithub } from "react-icons/fa";
 import { authClient } from "@/lib/auth-client";
 import { getSafeCallbackUrl } from "@/lib/safe-callback";
 import type { SocialProvider } from "@/lib/social-providers";
+
+// Reading window.location during render breaks hydration, so the
+// callback URL is resolved at call time (submit handlers / effects).
+function resolveCallbackUrl(): string {
+  return getSafeCallbackUrl(
+    new URLSearchParams(window.location.search).get("callbackUrl"),
+  );
+}
+
+// Hydration-safe client-only flag: the server snapshot is always false,
+// so the first client render produces exactly the server markup and the
+// real UI appears on the post-hydration re-render.
+const noopSubscribe = () => () => {};
+
+function useMounted(): boolean {
+  return useSyncExternalStore(
+    noopSubscribe,
+    () => true,
+    () => false,
+  );
+}
 
 interface SignInFormProps {
   /** Providers whose credentials exist on the server; others are hidden. */
@@ -27,19 +53,13 @@ export default function SignInForm({ providers }: SignInFormProps) {
 
   const [loading, setLoading] = useState(false);
 
-  // The callback URL is resolved inside an effect (never during render),
-  // so the server render and the first client render produce identical
-  // markup and React hydration does not mismatch.
-  const [callbackUrl, setCallbackUrl] = useState<string | null>(null);
+  const mounted = useMounted();
 
-  // Resolve the safe callback URL on mount. Visitors redirected from a
-  // product page also get a hint why they are here.
+  // Visitors redirected from a product page get a hint why they are here.
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const requestedUrl = params.get("callbackUrl");
     const safeUrl = getSafeCallbackUrl(requestedUrl);
-
-    setCallbackUrl(safeUrl);
 
     if (requestedUrl && safeUrl.startsWith("/product/")) {
       toast("বিস্তারিত দাম দেখতে আগে সাইন ইন করুন");
@@ -48,11 +68,11 @@ export default function SignInForm({ providers }: SignInFormProps) {
 
   // Signed-in users skip the form and go to their intended page.
   useEffect(() => {
-    if (callbackUrl && !session.isPending && session.data?.user) {
-      router.replace(callbackUrl);
+    if (mounted && !session.isPending && session.data?.user) {
+      router.replace(resolveCallbackUrl());
       router.refresh();
     }
-  }, [callbackUrl, router, session.isPending, session.data?.user]);
+  }, [mounted, router, session.isPending, session.data?.user]);
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -71,7 +91,7 @@ export default function SignInForm({ providers }: SignInFormProps) {
         email,
         password: formData.password,
         rememberMe: true,
-        callbackURL: callbackUrl ?? "/",
+        callbackURL: resolveCallbackUrl(),
       });
 
       if (error) {
@@ -81,7 +101,7 @@ export default function SignInForm({ providers }: SignInFormProps) {
 
       toast.success("সফলভাবে সাইন ইন করা হয়েছে");
 
-      router.replace(callbackUrl ?? "/");
+      router.replace(resolveCallbackUrl());
       router.refresh();
     } catch (error: unknown) {
       const message =
@@ -99,7 +119,7 @@ export default function SignInForm({ providers }: SignInFormProps) {
     try {
       const { error } = await authClient.signIn.social({
         provider,
-        callbackURL: callbackUrl ?? "/",
+        callbackURL: resolveCallbackUrl(),
       });
 
       if (error) {
@@ -109,7 +129,7 @@ export default function SignInForm({ providers }: SignInFormProps) {
 
       toast.success("সফলভাবে সাইন ইন করা হয়েছে");
 
-      router.replace(callbackUrl ?? "/");
+      router.replace(resolveCallbackUrl());
       router.refresh();
     } catch (error: unknown) {
       const message =
@@ -121,8 +141,9 @@ export default function SignInForm({ providers }: SignInFormProps) {
     }
   };
 
-  // Don't flash the form while the session or callback URL is still resolving.
-  if (session.isPending || callbackUrl === null) {
+  // Don't flash the form before hydration completes or while the
+  // session is still resolving.
+  if (!mounted || session.isPending) {
     return (
       <div className="mx-auto flex min-h-[55vh] w-full max-w-md items-center justify-center px-4">
         <div className="w-full animate-pulse space-y-4">

@@ -45,11 +45,11 @@ Bengali market-price app for the B14-A7 assignment. One origin, no database: `ht
 
 ## Auth
 
-- BetterAuth IS implemented: `src/lib/auth.ts` (server), `src/lib/auth-client.ts` (client), `src/app/api/auth/[...all]/route.ts`, plus `/signin` and `/signup` client pages. `AuthButtons` shows প্রোফাইল / সাইন আউট when logged in.
-- **No `middleware.ts` exists.** `/product/:path*` is NOT protected. Only `/profile` redirects unauthenticated users to `/signin?callbackUrl=/profile` client-side. Do not assume product pages require login.
+- BetterAuth IS implemented: `src/lib/auth.ts` (server), `src/lib/auth-client.ts` (client), `src/app/api/auth/[...all]/route.ts`, plus `/signin` and `/signup` (server pages rendering `src/components/auth/SignInForm.tsx` / `SignUpForm.tsx` client components). `AuthButtons` shows প্রোফাইল / সাইন আউট when logged in.
+- **No `middleware.ts` exists**, but Next 16's renamed `src/proxy.ts` DOES protect `/product/:path*`: unauthenticated visitors are redirected to `/signin?callbackUrl=...`, and the product page re-checks the session server-side as defense-in-depth. Only `/profile` additionally redirects unauthenticated users to `/signin?callbackUrl=/profile` client-side.
 - Use `useSession` from `better-auth/react` or `authClient` from `@/lib/auth-client` for session access.
 - Social providers (Google/GitHub) need `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `GITHUB_CLIENT_ID`, `GITHUB_CLIENT_SECRET`. When missing, social login is gracefully unavailable.
-- `.env` is gitignored but required locally. It holds `BETTER_AUTH_URL`, `BETTER_AUTH_SECRET`, the OAuth creds, and `NEXT_PUBLIC_BETTER_AUTH_URL` (used by `auth-client.ts`; falls back to `http://localhost:3000`).
+- `.env` is gitignored but required locally. It holds `BETTER_AUTH_URL`, `BETTER_AUTH_SECRET`, and the OAuth creds. `auth-client.ts` calls `createAuthClient()` with no baseURL, so the browser always talks to its own origin.
 
 ## Routes
 

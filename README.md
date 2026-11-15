@@ -71,6 +71,9 @@ bd-bazardor/
 │   │   ├── Hero.tsx
 │   │   ├── Marquee.tsx
 │   │   ├── NavLinks.tsx
+│   │   ├── auth/
+│   │   │   ├── SignInForm.tsx
+│   │   │   └── SignUpForm.tsx
 │   │   └── products/
 │   │       ├── ProductCard.tsx
 │   │       └── ProductSections.tsx
@@ -80,6 +83,7 @@ bd-bazardor/
 │   │   ├── auth.ts
 │   │   ├── products-api.ts
 │   │   ├── safe-callback.ts
+│   │   ├── social-providers.ts
 │   │   └── type.ts
 │   │
 │   └── proxy.ts
@@ -203,6 +207,27 @@ Authentication-related routes:
 | `/api/auth/[...all]` | Better Auth API handler |
 
 Individual product-detail pages require authentication.
+
+Social login buttons (Google / GitHub) are rendered only when that
+provider's credentials are present in the environment — without
+credentials the buttons and the "অথবা" divider are hidden entirely
+instead of failing on click.
+
+### Verifying MongoDB connectivity
+
+Better Auth stores its data in MongoDB and creates its collections
+(`user`, `session`, `account`, `verification`) lazily on the first
+signup, so an empty database right after setup is expected — not an
+error. To verify connectivity:
+
+1. Sign up once through the app, or ping the database directly:
+
+   ```bash
+   node -e "const { MongoClient } = require('mongodb'); const c = new MongoClient(process.env.MONGODB_URI); c.connect().then(async () => { console.log(await c.db().command({ ping: 1 })); await c.close(); })"
+   ```
+
+2. Re-check the collections — they should now exist.
+
 
 ---
 

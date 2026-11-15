@@ -222,7 +222,7 @@ BazarDor can be deployed using [Vercel](https://vercel.com/).
 
 ## 🔗 Project Links
 
-- **Live Website:** [Add your deployed URL here](#)
+- **Live Website:** [https://bangladesh-bazar-dor.vercel.app/](https://bangladesh-bazar-dor.vercel.app/)
 - **GitHub Repository:** [bd-bazardor](https://github.com/JamilurCodes/bd-bazardor)
 
 ---

@@ -12,9 +12,15 @@ export async function proxy(request: NextRequest) {
     session = await auth.api.getSession({
       headers: request.headers,
     });
-  } catch {
+  } catch (error) {
     // MongoDB unreachable or the lookup failed — treat the visitor
     // as signed out so the route redirects instead of returning a 500.
+    // The failure is logged so outages are visible in the server logs
+    // instead of silently looking like "everyone is signed out".
+    console.error(
+      "[proxy] session lookup failed:",
+      error instanceof Error ? error.message : error,
+    );
   }
 
   // Signed-in visitors continue to the product page.

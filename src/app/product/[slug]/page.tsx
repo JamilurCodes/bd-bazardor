@@ -1,4 +1,3 @@
-
 import Image from "next/image";
 import Link from "next/link";
 import { headers } from "next/headers";
@@ -58,9 +57,7 @@ export default async function ProductDetailsPage({
   if (!session?.user) {
     const requestedPath = `/product/${slug}`;
 
-    redirect(
-      `/signin?callbackUrl=${encodeURIComponent(requestedPath)}`
-    );
+    redirect(`/signin?callbackUrl=${encodeURIComponent(requestedPath)}`);
   }
 
   // The API's /products/:id expects a numeric ID, but this route is
@@ -74,51 +71,38 @@ export default async function ProductDetailsPage({
 
   // The API's image field is either a URL or an emoji string.
   const productImage =
-    typeof product.image === "string"
-      ? product.image.trim()
-      : "";
+    typeof product.image === "string" ? product.image.trim() : "";
 
   const isImageUrl = /^https?:\/\//i.test(productImage);
 
-  const fallbackIcon =
-    productImage || product.categoryIcon || "🛒";
+  const fallbackIcon = productImage || product.categoryIcon || "🛒";
 
   const markets = product.markets ?? [];
 
   // The API uses several synonyms for direction ("up", "rise",
   // "increased", ...), so all known variants are recognized here.
-  const UP_DIRECTIONS = [
-    "up",
-    "increase",
-    "increased",
-    "rise",
-    "rising",
-  ];
+  const UP_DIRECTIONS = ["up", "increase", "increased", "rise", "rising"];
 
-  const DOWN_DIRECTIONS = [
-    "down",
-    "decrease",
-    "decreased",
-    "fall",
-    "falling",
-  ];
+  const DOWN_DIRECTIONS = ["down", "decrease", "decreased", "fall", "falling"];
 
-  const changeDirection = product.change.dir
-    .trim()
-    .toLowerCase();
+  const changeDirection =
+    typeof product.change?.dir === "string"
+      ? product.change.dir.trim().toLowerCase()
+      : "";
 
-  const changePercentage = Math.abs(product.change.pct);
+  const changePercentage =
+    typeof product.change?.pct === "number" &&
+    Number.isFinite(product.change.pct)
+      ? Math.abs(product.change.pct)
+      : 0;
 
   const priceIncreased =
-    changePercentage > 0 &&
-    UP_DIRECTIONS.includes(changeDirection);
+    changePercentage > 0 && UP_DIRECTIONS.includes(changeDirection);
 
   const priceDecreased =
-    changePercentage > 0 &&
-    DOWN_DIRECTIONS.includes(changeDirection);
+    changePercentage > 0 && DOWN_DIRECTIONS.includes(changeDirection);
 
-  const priceUnchanged =
-    !priceIncreased && !priceDecreased;
+  const priceUnchanged = !priceIncreased && !priceDecreased;
 
   // Detail page uses red for price-up and green for price-down,
   // which is the inverse of ProductCard's palette.
@@ -128,11 +112,7 @@ export default async function ProductDetailsPage({
       ? "text-red-600"
       : "text-base-content/60";
 
-  const changeSymbol = priceIncreased
-    ? "▲"
-    : priceDecreased
-      ? "▼"
-      : "—";
+  const changeSymbol = priceIncreased ? "▲" : priceDecreased ? "▼" : "—";
 
   const minPrice =
     markets.length > 0
@@ -147,9 +127,8 @@ export default async function ProductDetailsPage({
   const avgPrice =
     markets.length > 0
       ? markets.reduce(
-          (sum, market) =>
-            sum + (market.min + market.max) / 2,
-          0
+          (sum, market) => sum + (market.min + market.max) / 2,
+          0,
         ) / markets.length
       : product.today;
 
@@ -169,10 +148,7 @@ export default async function ProductDetailsPage({
 
         <span aria-hidden="true">/</span>
 
-        <span
-          className="font-medium text-base-content"
-          aria-current="page"
-        >
+        <span className="font-medium text-base-content" aria-current="page">
           {product.nameBn}
         </span>
       </nav>
@@ -180,7 +156,6 @@ export default async function ProductDetailsPage({
       <section className="mb-8">
         <div className="rounded-2xl border border-[#e5e7e0] bg-[#fbfdfb] p-6 sm:p-8">
           <div className="grid grid-cols-1 gap-8 lg:grid-cols-12">
-
             <div className="flex flex-col items-center justify-center gap-4 lg:col-span-4">
               <div className="flex size-24 shrink-0 items-center justify-center overflow-hidden rounded-full bg-[#eff4ef] sm:size-32">
                 {isImageUrl ? (
@@ -194,10 +169,7 @@ export default async function ProductDetailsPage({
                     unoptimized
                   />
                 ) : (
-                  <span
-                    className="text-4xl sm:text-5xl"
-                    aria-hidden="true"
-                  >
+                  <span className="text-4xl sm:text-5xl" aria-hidden="true">
                     {fallbackIcon}
                   </span>
                 )}
@@ -224,9 +196,7 @@ export default async function ProductDetailsPage({
               </p>
 
               <div className="rounded-2xl border border-[#e5e7e0] bg-[#fbfdfb] p-5">
-                <p className="mb-2 text-sm text-base-content/60">
-                  আজকের দাম
-                </p>
+                <p className="mb-2 text-sm text-base-content/60">আজকের দাম</p>
 
                 <div className="mb-2 flex flex-wrap items-baseline gap-2">
                   <span className="text-3xl font-bold text-[#202a23]">
@@ -241,13 +211,9 @@ export default async function ProductDetailsPage({
                 <div
                   className={`flex items-center gap-1 font-medium ${changeColor}`}
                 >
-                  <span aria-hidden="true">
-                    {changeSymbol}
-                  </span>
+                  <span aria-hidden="true">{changeSymbol}</span>
 
-                  <span>
-                    {formatPrice(changePercentage)}%
-                  </span>
+                  <span>{formatPrice(changePercentage)}%</span>
 
                   <span className="ml-1 text-xs text-base-content/50">
                     {priceUnchanged
@@ -262,16 +228,11 @@ export default async function ProductDetailsPage({
       </section>
 
       <section className="mb-8">
-        <h2 className="mb-6 text-xl font-bold text-[#202a23]">
-          দামের সারাংশ
-        </h2>
+        <h2 className="mb-6 text-xl font-bold text-[#202a23]">দামের সারাংশ</h2>
 
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-
           <div className="rounded-2xl border border-[#e5e7e0] bg-[#fbfdfb] p-6 text-center">
-            <p className="mb-1 text-sm text-[#68716a]">
-              সর্বনিম্ন দাম
-            </p>
+            <p className="mb-1 text-sm text-[#68716a]">সর্বনিম্ন দাম</p>
 
             <p className="text-xl font-semibold text-green-600">
               ৳{formatPrice(minPrice)}
@@ -279,9 +240,7 @@ export default async function ProductDetailsPage({
           </div>
 
           <div className="rounded-2xl border border-[#e5e7e0] bg-[#fbfdfb] p-6 text-center">
-            <p className="mb-1 text-sm text-[#68716a]">
-              সর্বোচ্চ দাম
-            </p>
+            <p className="mb-1 text-sm text-[#68716a]">সর্বোচ্চ দাম</p>
 
             <p className="text-xl font-semibold text-red-600">
               ৳{formatPrice(maxPrice)}
@@ -289,9 +248,7 @@ export default async function ProductDetailsPage({
           </div>
 
           <div className="rounded-2xl border border-[#e5e7e0] bg-[#fbfdfb] p-6 text-center">
-            <p className="mb-1 text-sm text-[#68716a]">
-              গড় দাম
-            </p>
+            <p className="mb-1 text-sm text-[#68716a]">গড় দাম</p>
 
             <p className="text-xl font-semibold text-green-600">
               ৳{formatPrice(avgPrice)}
@@ -334,8 +291,7 @@ export default async function ProductDetailsPage({
 
               <tbody>
                 {markets.map((market) => {
-                  const marketAverage =
-                    (market.min + market.max) / 2;
+                  const marketAverage = (market.min + market.max) / 2;
 
                   return (
                     <tr

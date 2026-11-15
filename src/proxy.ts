@@ -6,9 +6,16 @@ import { auth } from "@/lib/auth";
 // Protect product-detail routes, preserving the requested URL
 // so sign-in can send the visitor back afterwards.
 export async function proxy(request: NextRequest) {
-  const session = await auth.api.getSession({
-    headers: request.headers,
-  });
+  let session: Awaited<ReturnType<typeof auth.api.getSession>> | null = null;
+
+  try {
+    session = await auth.api.getSession({
+      headers: request.headers,
+    });
+  } catch {
+    // MongoDB unreachable or the lookup failed — treat the visitor
+    // as signed out so the route redirects instead of returning a 500.
+  }
 
   // Signed-in visitors continue to the product page.
   if (session?.user) {

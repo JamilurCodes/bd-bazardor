@@ -6,15 +6,9 @@ import Logo from "../../public/logo-icon.png";
 import NavLinks from "./NavLinks";
 import Marquee from "./Marquee";
 import AuthButtons from "./AuthButtons";
+import BanglaDate from "./BanglaDate";
 
 const Header = () => {
-  const banglaDate = new Intl.DateTimeFormat("bn-BD", {
-    weekday: "long",
-    day: "numeric",
-    month: "long",
-    year: "numeric",
-  }).format(new Date());
-
   return (
     <header className="w-full bg-[#f9fbf9] text-[#202820]">
       <div className="border-b border-[#e5eae5]">
@@ -38,9 +32,7 @@ const Header = () => {
                 বাজার দর
               </span>
 
-              <span className="mt-0.5 text-xs text-[#68716a]">
-                {banglaDate}
-              </span>
+              <BanglaDate className="mt-0.5 text-xs text-[#68716a]" />
             </span>
           </Link>
 
